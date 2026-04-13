@@ -16,41 +16,37 @@ Provides syntax highlighting and parsing support for `.arche` files in Neovim, E
 
 ### LazyVim
 
-Create `~/.config/nvim/lua/plugins/treesitter-arche.lua`:
+Create `~/.config/nvim/lua/plugins/arche.lua`:
 
 ```lua
 return {
-  "nvim-treesitter/nvim-treesitter",
-  opts = function(_, opts)
-    -- Register arche parser with nvim-treesitter
-    local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-    parser_config.arche = {
-      install_info = {
-        url = "https://github.com/Truc4/tree-sitter-arche",
-        files = { "src/parser.c" },
-        branch = "main",
-      },
-      filetype = "arche",
-    }
-    
-    -- Add to auto-install list
-    opts.ensure_installed = opts.ensure_installed or {}
-    table.insert(opts.ensure_installed, "arche")
-    
-    return opts
-  end,
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+      parser_config.arche = {
+        install_info = {
+          url = "https://github.com/Truc4/tree-sitter-arche",
+          files = { "src/parser.c" },
+          branch = "main",
+        },
+        filetype = "arche",
+      }
+      opts.ensure_installed = opts.ensure_installed or {}
+      table.insert(opts.ensure_installed, "arche")
+      return opts
+    end,
+  },
+  {
+    "neovim/nvim-lspconfig",
+    init = function()
+      vim.filetype.add({ extension = { arche = "arche" } })
+    end,
+  },
 }
 ```
 
-Then in `~/.config/nvim/lua/config/autocmds.lua` (or anywhere early in init):
-
-```lua
-vim.filetype.add({
-  extension = { arche = "arche" },
-})
-```
-
-Finally, restart nvim and run `:TSInstall arche`, then open a `.arche` file.
+Restart nvim, then run `:TSInstall arche`. Open a `.arche` file—highlighting should work.
 
 ### Manual Installation
 
