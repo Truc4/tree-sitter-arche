@@ -16,37 +16,41 @@ Provides syntax highlighting and parsing support for `.arche` files in Neovim, E
 
 ### LazyVim
 
-Add to your LazyVim config:
+Create `~/.config/nvim/lua/plugins/treesitter-arche.lua`:
 
 ```lua
-{
+return {
   "nvim-treesitter/nvim-treesitter",
   opts = function(_, opts)
+    -- Register arche parser with nvim-treesitter
     local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
     parser_config.arche = {
       install_info = {
         url = "https://github.com/Truc4/tree-sitter-arche",
         files = { "src/parser.c" },
-        requires_generate_from_grammar = true,
+        branch = "main",
       },
       filetype = "arche",
     }
-    if opts.ensure_installed then
-      table.insert(opts.ensure_installed, "arche")
-    end
+    
+    -- Add to auto-install list
+    opts.ensure_installed = opts.ensure_installed or {}
+    table.insert(opts.ensure_installed, "arche")
+    
     return opts
   end,
 }
 ```
 
-Also add filetype detection (in your config or init.vim):
+Then in `~/.config/nvim/lua/config/autocmds.lua` (or anywhere early in init):
+
 ```lua
 vim.filetype.add({
   extension = { arche = "arche" },
 })
 ```
 
-Then run `:TSInstall arche` and open a `.arche` file. Done.
+Finally, restart nvim and run `:TSInstall arche`, then open a `.arche` file.
 
 ### Manual Installation
 
@@ -116,6 +120,21 @@ npm test
 - Allocation: `Entity.alloc(field: value)`
 
 See [arche/docs/GRAMMAR.peg](arche/docs/GRAMMAR.peg) for full grammar specification.
+
+## Troubleshooting
+
+**Parser fails to install:**
+- Make sure `requires_generate_from_grammar` is **not** set (tree-sitter-cli generates on your machine, not from grammar.js)
+- Check `:TSCheckHealth` for errors
+
+**Highlighting not working:**
+- Verify filetype: `:set filetype?` should show `arche`
+- Check parser loaded: `:TSInstallInfo arche` should show status
+- Verify highlights loaded: `:set filetype=arche` then `:Inspect` on a keyword
+
+**"arche" is not a valid language:**
+- Parser not installed. Run `:TSInstall arche`
+- Or restart nvim after installing
 
 ## Development
 
