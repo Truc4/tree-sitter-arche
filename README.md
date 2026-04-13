@@ -148,11 +148,3 @@ npm test
 ```
 
 After changes, commit `grammar.js` and the generated files in `src/`.
-
-## License
-
-MIT
-
-## Author
-
-Curt Reyes
