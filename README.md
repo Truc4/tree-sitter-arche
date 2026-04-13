@@ -12,27 +12,45 @@ Provides syntax highlighting and parsing support for `.arche` files in Neovim, E
 - **Automatic indentation** for code blocks
 - **References to arche compiler** via git submodule for testing and grammar verification
 
-## Installation
+## Quickstart
 
-### Neovim (with LazyVim)
+### LazyVim
 
-See [NEOVIM.md](NEOVIM.md) for detailed setup instructions.
+Add to your LazyVim config:
 
-Quick start:
 ```lua
-parser_config.arche = {
-  install_info = {
-    url = "https://github.com/Truc4/tree-sitter-arche",
-    files = { "src/parser.c" },
-    requires_generate_from_grammar = true,
-  },
-  filetype = "arche",
+{
+  "nvim-treesitter/nvim-treesitter",
+  opts = function(_, opts)
+    local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+    parser_config.arche = {
+      install_info = {
+        url = "https://github.com/Truc4/tree-sitter-arche",
+        files = { "src/parser.c" },
+        requires_generate_from_grammar = true,
+      },
+      filetype = "arche",
+    }
+    if opts.ensure_installed then
+      table.insert(opts.ensure_installed, "arche")
+    end
+    return opts
+  end,
 }
 ```
 
-### Manual Build
+Also add filetype detection (in your config or init.vim):
+```lua
+vim.filetype.add({
+  extension = { arche = "arche" },
+})
+```
 
-Requires: `node >= 14`, `tree-sitter-cli`
+Then run `:TSInstall arche` and open a `.arche` file. Done.
+
+### Manual Installation
+
+Requires: `node >= 14`, `tree-sitter-cli` npm.
 
 ```bash
 git clone https://github.com/Truc4/tree-sitter-arche
@@ -40,6 +58,12 @@ cd tree-sitter-arche
 
 npm install
 npm run build
+
+# Symlink to nvim (adjust path if needed)
+ln -s $(pwd) ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/parsers/arche
+
+# Then in nvim config:
+# vim.treesitter.language.register("arche", "arche")
 ```
 
 ## Testing
@@ -95,16 +119,22 @@ See [arche/docs/GRAMMAR.peg](arche/docs/GRAMMAR.peg) for full grammar specificat
 
 ## Development
 
-The grammar is validated against the arche compiler's grammar and test fixtures in the `arche/` submodule.
+The grammar (`grammar.js`) is derived from [`arche/docs/GRAMMAR.peg`](arche/docs/GRAMMAR.peg). The `arche/` submodule contains reference compiler, test fixtures, and the canonical grammar spec.
 
-Make changes to `grammar.js`, then:
+To modify the grammar:
 
 ```bash
-npm run build     # Generate parser.c from grammar
-npm run test      # Run corpus tests
+# Edit grammar.js
+vim grammar.js
+
+# Regenerate parser.c
+npm run build
+
+# Test (optional, corpus tests TBD)
+npm test
 ```
 
-Commit `src/parser.c` and all generated files.
+After changes, commit `grammar.js` and the generated files in `src/`.
 
 ## License
 
