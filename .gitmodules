@@ -1,0 +1,3 @@
+[submodule "arche"]
+	path = arche
+	url = git@github.com:Truc4/arche.git
