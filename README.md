@@ -12,57 +12,20 @@ Provides syntax highlighting and parsing support for `.arche` files in Neovim, E
 - **Automatic indentation** for code blocks
 - **References to arche compiler** via git submodule for testing and grammar verification
 
-## Quickstart
+## Setup
 
 ### LazyVim
 
-Add to your treesitter plugin config (e.g., `~/.config/nvim/lua/plugins/treesitter.lua`):
+Add to your plugins (e.g., `lua/plugins/treesitter.lua`):
 
 ```lua
-return {
-  "nvim-treesitter/nvim-treesitter",
-  opts = function(_, opts)
-    local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-    parser_config.arche = {
-      install_info = {
-        url = "https://github.com/Truc4/tree-sitter-arche",
-        files = { "src/parser.c" },
-        branch = "main",
-      },
-      filetype = "arche",
-    }
-    opts.ensure_installed = opts.ensure_installed or {}
-    table.insert(opts.ensure_installed, "arche")
-    return opts
-  end,
+{
+  "Truc4/tree-sitter-arche",
+  dependencies = "nvim-treesitter/nvim-treesitter"
 }
 ```
 
-Add filetype registration early (e.g., `~/.config/nvim/lua/config/autocmds.lua`):
-
-```lua
-vim.filetype.add({ extension = { arche = "arche" } })
-```
-
-Restart nvim, run `:TSInstall arche`, open a `.arche` file.
-
-### Manual Installation
-
-Requires: `node >= 14`, `tree-sitter-cli` npm.
-
-```bash
-git clone https://github.com/Truc4/tree-sitter-arche
-cd tree-sitter-arche
-
-npm install
-npm run build
-
-# Symlink to nvim (adjust path if needed)
-ln -s $(pwd) ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/parsers/arche
-
-# Then in nvim config:
-# vim.treesitter.language.register("arche", "arche")
-```
+LazyVim automatically clones, builds, and registers the parser. Open a `.arche` file and syntax highlighting works.
 
 ## Testing
 

@@ -1,10 +1,10 @@
 node_modules/
+build/
+dist/
 *.o
 *.so
 *.dylib
 parser
-build/
-dist/
 .DS_Store
 *.swp
 *.swo
