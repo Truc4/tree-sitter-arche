@@ -1,21 +1,20 @@
 ; Keywords
 [
-  "world"
   "arche"
-  "archetype"
   "proc"
   "sys"
   "func"
   "let"
   "for"
   "in"
-  "run"
   "free"
   "extern"
+  "world"
 ] @keyword
 
-; Field modifiers
-["meta" "col"] @keyword.modifier
+; alloc and run are identifiers in the language — highlight as keywords contextually
+(alloc_expression "alloc" @keyword)
+(run_statement "run" @keyword)
 
 ; Declarations
 (world_declaration name: (identifier) @namespace)
@@ -25,19 +24,22 @@
 (func_declaration name: (identifier) @function)
 (extern_declaration name: (identifier) @function)
 
-; Function calls
+; Calls
 (call_expression function: (identifier) @function.call)
+(call_expression function: (field_expression field: (identifier) @method.call))
 
-; Type annotations
+; Alloc type
+(alloc_expression type: (identifier) @type)
+
+; Types
 (type) @type
 (parameter name: (identifier) @variable.parameter)
 
-; Field and property access
+; Field access and properties
 (field_expression field: (identifier) @property)
 (field_declaration name: (identifier) @property)
-(field_init name: (identifier) @property)
 
-; Let bindings
+; Variable bindings
 (let_statement name: (identifier) @variable)
 
 ; Literals
@@ -49,25 +51,10 @@
 
 ; Operators
 [
-  "+"
-  "-"
-  "*"
-  "/"
-  "=="
-  "!="
-  "<"
-  ">"
-  "<="
-  ">="
-  "="
-  "+="
-  "-="
-  "*="
-  "/="
-  "->"
+  "+" "-" "*" "/" "==" "!=" "<" ">" "<=" ">="
+  "=" "+=" "-=" "*=" "/=" "->"
 ] @operator
 
-; Unary operators
 (unary_expression operator: _ @operator)
 
 ; Punctuation

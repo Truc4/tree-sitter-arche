@@ -23,28 +23,27 @@ module.exports = grammar({
     // world Game() or world Game(field1, field2, ...)
     world_declaration: $ => seq(
       'world',
-      $.identifier,
+      field('name', $.identifier),
       '(',
       optional(commaSep($.identifier)),
       ')',
     ),
 
-    // arche Player { meta field: Type, col field: Type }
+    // arche Player { field: Type, field: Type }
     // or archetype Player { ... }
     archetype_declaration: $ => seq(
       choice('arche', 'archetype'),
-      $.identifier,
+      field('name', $.identifier),
       '{',
       repeat($.field_declaration),
       '}',
     ),
 
-    // meta position: Vec3,  or  col health: Float
+    // position: Vec3,  or  health: Float
     field_declaration: $ => seq(
-      choice('meta', 'col'),
-      $.identifier,
+      field('name', $.identifier),
       ':',
-      $.type,
+      field('type', $.type),
       optional(','),
     ),
 
@@ -52,7 +51,7 @@ module.exports = grammar({
     // proc move(pos, vel) { ... }
     proc_declaration: $ => seq(
       'proc',
-      $.identifier,
+      field('name', $.identifier),
       '(',
       optional(commaSep($._proc_parameter)),
       ')',
@@ -70,9 +69,9 @@ module.exports = grammar({
     // sys move(pos, vel) { ... }
     sys_declaration: $ => seq(
       'sys',
-      $.identifier,
+      field('name', $.identifier),
       '(',
-      optional(commaSep($._proc_parameter)),
+      optional(commaSep($.identifier)),
       ')',
       '{',
       repeat($._statement),
@@ -82,14 +81,14 @@ module.exports = grammar({
     // func clamp(value: Float, ...) -> Float { expr }
     func_declaration: $ => seq(
       'func',
-      $.identifier,
+      field('name', $.identifier),
       '(',
       optional(commaSep($.parameter)),
       ')',
       '->',
-      $.type,
+      field('return_type', $.type),
       '{',
-      $._expression,
+      field('body', $._expression),
       '}',
     ),
 
@@ -97,7 +96,7 @@ module.exports = grammar({
     extern_declaration: $ => seq(
       'extern',
       'proc',
-      $.identifier,
+      field('name', $.identifier),
       '(',
       optional(commaSep($.parameter)),
       ')',
@@ -106,13 +105,16 @@ module.exports = grammar({
 
     // name: Type
     parameter: $ => seq(
-      $.identifier,
+      field('name', $.identifier),
       ':',
-      $.type,
+      field('type', $.type),
     ),
 
-    // Type is just an identifier (Int, Float, Vec3, etc.)
-    type: $ => $.identifier,
+    // Type is identifier or identifier[] (Int, Float, Vec3, char[], etc.)
+    type: $ => seq(
+      $.identifier,
+      optional('[]'),
+    ),
 
     // Statements
     _statement: $ => choice(
@@ -128,17 +130,17 @@ module.exports = grammar({
     // let x = 10;
     let_statement: $ => seq(
       'let',
-      $.identifier,
+      field('name', $.identifier),
       '=',
-      $._expression,
+      field('value', $._expression),
       ';',
     ),
 
     // pos = pos + vel;  or  x += 5;
     assignment_statement: $ => seq(
-      $._assignable,
-      $.assign_op,
-      $._expression,
+      field('target', $._assignable),
+      field('operator', $.assign_op),
+      field('value', $._expression),
       ';',
     ),
 
@@ -147,20 +149,18 @@ module.exports = grammar({
     // for i in players { ... }
     for_statement: $ => seq(
       'for',
-      $.identifier,
+      field('iterator', $.identifier),
       'in',
-      $.identifier,
+      field('iterable', $.identifier),
       '{',
       repeat($._statement),
       '}',
     ),
 
-    // run move in GameWorld;
+    // run move;
     run_statement: $ => seq(
       'run',
-      $.identifier,
-      'in',
-      $.identifier,
+      field('system', $.identifier),
       ';',
     ),
 
@@ -210,8 +210,9 @@ module.exports = grammar({
       ));
     },
 
-    // Primary expressions (no alloc)
+    // Primary expressions
     _primary: $ => choice(
+      $.alloc_expression,
       $.call_expression,
       $.index_expression,
       $.field_expression,
@@ -222,9 +223,18 @@ module.exports = grammar({
       seq('(', $._expression, ')'),
     ),
 
-    // function(arg1, arg2) or Entity.alloc(field: value)
+    // alloc TypeName(count)
+    alloc_expression: $ => seq(
+      'alloc',
+      field('type', $.identifier),
+      '(',
+      field('count', $._expression),
+      ')',
+    ),
+
+    // function(arg1, arg2)
     call_expression: $ => prec(5, seq(
-      choice($.field_expression, $.identifier),
+      field('function', choice($.field_expression, $.identifier)),
       '(',
       optional(commaSep($._expression)),
       ')',
@@ -240,15 +250,15 @@ module.exports = grammar({
 
     // obj.field or expr.field
     field_expression: $ => prec.left(4, seq(
-      $._primary,
+      field('object', $._primary),
       '.',
-      $.identifier,
+      field('field', $.identifier),
     )),
 
     // unary operators (-, !)
     unary_expression: $ => prec(6, seq(
-      choice('-', '!'),
-      $._primary,
+      field('operator', choice('-', '!')),
+      field('operand', $._primary),
     )),
 
     // Literals
